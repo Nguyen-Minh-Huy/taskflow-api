@@ -55,6 +55,7 @@ public class TaskFlowDbContext : DbContext
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<FileAttachment> FileAttachments => Set<FileAttachment>();
     public DbSet<ActivitiesLog> ActivitiesLogs => Set<ActivitiesLog>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

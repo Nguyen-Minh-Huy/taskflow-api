@@ -5,7 +5,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
     <Folder Include="Behaviors\" />
     <Folder Include="Mappings\" />
   </ItemGroup>
