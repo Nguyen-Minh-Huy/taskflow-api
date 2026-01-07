@@ -7,6 +7,10 @@ using System.Linq;
 using TaskFlow.Application.Commons;
 using TaskFlow.API.Middleware;
 using TaskFlow.Infrastructure;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +52,31 @@ builder.Services.AddValidatorsFromAssemblyContaining<TaskFlow.Application.Mappin
 // Đăng ký Infrastructure Services qua extension method
 builder.Services.AddInfrastructure();
 
+// Đăng ký Auth Services
+builder.Services.AddScoped<TaskFlow.Application.Interfaces.IAuthService, TaskFlow.Infrastructure.Services.AuthService>();
+builder.Services.AddScoped<TaskFlow.Application.Interfaces.ITokenService, TaskFlow.Infrastructure.Services.TokenService>();
+
+// Cấu hình JWT Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!))
+    };
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -58,6 +87,10 @@ builder.Services.AddSwaggerGen(c =>
         Description = "TaskFlow API documentation"
     });
 });
+
+// register DbContext
+builder.Services.AddDbContext<TaskFlowDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -75,6 +108,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

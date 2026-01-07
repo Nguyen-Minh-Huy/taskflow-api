@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using TaskFlow.Application.Interfaces;
+using TaskFlow.Application.Services;
 using TaskFlow.Infrastructure.Services;
 
 namespace TaskFlow.Infrastructure
@@ -12,7 +13,10 @@ namespace TaskFlow.Infrastructure
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+            // Thêm Auth service
+            services.AddScoped<IAuthService, AuthService>();
 
+            services.AddScoped<ITokenService, TokenService>();
             return services;
         }
     }
