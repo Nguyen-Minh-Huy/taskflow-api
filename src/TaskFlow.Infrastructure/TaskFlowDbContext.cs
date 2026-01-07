@@ -1,14 +1,51 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskFlow.Domain.Entities;
 using TaskEntity = TaskFlow.Domain.Entities.Task;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using TaskFlow.Application.Interfaces;
+using TaskFlow.Domain.Common;
 
 
 namespace TaskFlow.Infrastructure;
 
 public class TaskFlowDbContext : DbContext
 {
-    public TaskFlowDbContext(DbContextOptions<TaskFlowDbContext> options) : base(options) { }
+    private readonly ICurrentUserService? _currentUserService;
+    private readonly IDateTimeProvider? _dateTimeProvider;
 
+    public TaskFlowDbContext(
+        DbContextOptions<TaskFlowDbContext> options,
+        ICurrentUserService? currentUserService = null,
+        IDateTimeProvider? dateTimeProvider = null) : base(options)
+    {
+        _currentUserService = currentUserService;
+        _dateTimeProvider = dateTimeProvider;
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var userId = _currentUserService?.UserId;
+        var now = _dateTimeProvider?.UtcNow ?? DateTime.UtcNow;
+
+        foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.CreatedAt = now;
+                entry.Entity.CreatedBy = userId;
+                entry.Entity.UpdatedAt = now; // Optional: set UpdatedAt on creation too
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedAt = now;
+                entry.Entity.UpdatedBy = userId;
+            }
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
+    }
     public DbSet<User> Users => Set<User>();
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
