@@ -12,3 +12,5 @@ Thư mục này chứa tất cả các tài liệu kỹ thuật và nghiệp v�
 - **[03. Thiết kế Cơ sở Dữ liệu](./03-database-design.md)**: Sơ đồ ER, định nghĩa lược đồ, và chiến lược đánh chỉ mục.
 - **[04. Đặc tả API](./04-api-specification.md)**: Danh sách toàn diện các điểm cuối API (Xác thực, Dự án, Công việc).
 - **[05. Xác thực & Phân quyền](./05-auth-authorization.md)**: Chi tiết triển khai bảo mật, luồng JWT, và chính sách RBAC.
+
+i'm testing github
